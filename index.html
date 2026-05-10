@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>랜덤 팀 구성기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
+        body { font-family: 'Pretendard', sans-serif; }
+        .team-card { transition: all 0.3s ease; }
+        .team-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+        <!-- Header -->
+        <div class="bg-indigo-600 p-8 text-white text-center">
+            <h1 class="text-3xl font-extrabold mb-2 tracking-tight">
+                <i class="fas fa-users-cog mr-2"></i>랜덤 팀 구성기
+            </h1>
+            <p class="opacity-80">이름을 입력하고 버튼을 눌러 팀을 나눠보세요!</p>
+        </div>
+
+        <div class="p-8">
+            <div class="mb-6">
+                <label for="namesInput" class="block text-sm font-semibold text-slate-700 mb-2">
+                    참가자 명단 (쉼표나 줄바꿈으로 구분)
+                </label>
+                <textarea 
+                    id="namesInput" 
+                    rows="4" 
+                    class="w-full p-4 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all resize-none text-slate-600"
+                    placeholder="홍길동, 김철수, 이영희, 박지민..."
+                ></textarea>
+            </div>
+
+            <button 
+                onclick="splitTeams()"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+                <i class="fas fa-random"></i> 팀 나누기 시작!
+            </button>
+
+            <div id="resultArea" class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+                <!-- Team 1 -->
+                <div class="team-card bg-blue-50 rounded-2xl p-6 border border-blue-100">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-blue-500 text-white p-2 rounded-lg"><i class="fas fa-shield-alt"></i></span>
+                        <h2 class="text-xl font-bold text-blue-800">1팀 (Blue)</h2>
+                    </div>
+                    <ul id="team1List" class="space-y-2 text-blue-900 font-medium">
+                        <!-- Names will appear here -->
+                    </ul>
+                </div>
+
+                <!-- Team 2 -->
+                <div class="team-card bg-rose-50 rounded-2xl p-6 border border-rose-100">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-rose-500 text-white p-2 rounded-lg"><i class="fas fa-fire"></i></span>
+                        <h2 class="text-xl font-bold text-rose-800">2팀 (Red)</h2>
+                    </div>
+                    <ul id="team2List" class="space-y-2 text-rose-900 font-medium">
+                        <!-- Names will appear here -->
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="emptyMessage" class="mt-10 text-center text-slate-400 py-10 border-2 border-dashed border-slate-100 rounded-2xl">
+                <i class="fas fa-clipboard-list text-4xl mb-3 block"></i>
+                명단을 입력하면 결과가 여기에 표시됩니다.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function splitTeams() {
+            const input = document.getElementById('namesInput').value;
+            const resultArea = document.getElementById('resultArea');
+            const emptyMessage = document.getElementById('emptyMessage');
+            const team1List = document.getElementById('team1List');
+            const team2List = document.getElementById('team2List');
+
+            // 1. 이름 정제 (쉼표나 줄바꿈으로 나누고 공백 제거)
+            const names = input.split(/[\n,]+/)
+                .map(name => name.trim())
+                .filter(name => name !== "");
+
+            if (names.length < 2) {
+                alert("최소 2명 이상의 이름을 입력해주세요!");
+                return;
+            }
+
+            // 2. 무작위 섞기 (Fisher-Yates Shuffle)
+            for (let i = names.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [names[i], names[j]] = [names[j], names[i]];
+            }
+
+            // 3. 팀 나누기
+            const half = Math.ceil(names.length / 2);
+            const team1 = names.slice(0, half);
+            const team2 = names.slice(half);
+
+            // 4. 결과 출력
+            renderList(team1List, team1);
+            renderList(team2List, team2);
+
+            // UI 전환
+            resultArea.classList.remove('hidden');
+            emptyMessage.classList.add('hidden');
+            
+            // 결과로 스크롤
+            resultArea.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderList(element, members) {
+            element.innerHTML = members.map((name, index) => `
+                <li class="flex items-center gap-2 bg-white/50 p-2 rounded-lg border border-white/20">
+                    <span class="text-xs opacity-50">${index + 1}</span>
+                    ${name}
+                </li>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
